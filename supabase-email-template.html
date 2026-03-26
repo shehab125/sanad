@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تأكيد البريد الإلكتروني – سند</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: #0d0f17;
+      font-family: 'Cairo', Arial, sans-serif;
+      direction: rtl;
+    }
+
+    .wrapper {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #6c63ff 0%, #4b44cc 100%);
+      border-radius: 24px 24px 0 0;
+      padding: 60px 32px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    }
+
+    .logo {
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: white;
+      letter-spacing: -1.5px;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo-sub {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.85);
+      font-weight: 400;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Body */
+    .body {
+      background: #1a1e2e;
+      padding: 50px 40px;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: #9ca3af;
+      line-height: 1.9;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    /* Email display */
+    .email-display {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .email-pill {
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.4);
+      border-radius: 50px;
+      padding: 10px 24px;
+      color: #8b84ff;
+      font-weight: 700;
+      font-size: 1rem;
+      display: inline-block;
+    }
+
+    /* CTA Button */
+    .btn-wrapper {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #6c63ff, #4b44cc);
+      color: white !important;
+      padding: 18px 56px;
+      border-radius: 50px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      font-family: 'Cairo', Arial, sans-serif;
+      text-decoration: none;
+      box-shadow: 0 10px 30px rgba(108,99,255,0.45);
+      transition: all 0.3s ease;
+    }
+
+    /* Features Grid */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 40px 0;
+    }
+
+    .feature-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+      background: rgba(108,99,255,0.15);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+
+    .feature-name {
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .feature-desc {
+      color: #6b7280;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    /* Fallback box */
+    .fallback-box {
+      background: #111420;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .fallback-text {
+      font-size: 0.8rem;
+      color: #4b5563;
+      margin-bottom: 10px;
+    }
+
+    .fallback-link {
+      color: #6c63ff;
+      font-size: 0.75rem;
+      word-break: break-all;
+      text-decoration: none;
+    }
+
+    /* Footer */
+    .footer {
+      background: #141722;
+      border-radius: 0 0 24px 24px;
+      padding: 35px 40px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-top: none;
+    }
+
+    .footer-text { font-size: 0.85rem; color: #6b7280; line-height: 1.8; margin-bottom: 15px; }
+    .footer-copy { font-size: 0.78rem; color: #374151; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+    @media (max-width: 480px) {
+      .features { grid-template-columns: 1fr; }
+      .body { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="logo">سند</div>
+      <div class="logo-sub">رفيقك في رحلتك الجامعية</div>
+    </div>
+
+    <div class="body">
+      <h1 class="title">خطوة أخيرة للبداية 🚀</h1>
+      <p class="subtitle">سعداء جداً بانضمامك إلينا! يرجى تأكيد ملكيتك لهذا البريد الإلكتروني لنتمكن من تفعيل حسابك.</p>
+
+      <div class="email-display">
+        <span class="email-pill">{{ .Email }}</span>
+      </div>
+
+      <div class="btn-wrapper">
+        <a href="{{ .ConfirmationURL }}" class="btn">تأكيد الحساب الآن</a>
+      </div>
+
+      <div class="features">
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <div class="feature-name">سوق الكتب</div>
+          <div class="feature-desc">بيع وشراء الكتب والملخصات بسهولة</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏠</div>
+          <div class="feature-name">سكن الطلاب</div>
+          <div class="feature-desc">اعثر على مكانك المثالي للإقامة</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎓</div>
+          <div class="feature-name">المدرسون</div>
+          <div class="feature-desc">دروس خصوصية من نخبة الطلاب</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <div class="feature-name">مساعد AI</div>
+          <div class="feature-desc">إجابات ذكية لكل استفساراتك</div>
+        </div>
+      </div>
+
+      <div class="fallback-box">
+        <div class="fallback-text">أو قم بنسخ هذا الرابط في متصفحك:</div>
+        <a href="{{ .ConfirmationURL }}" class="fallback-link">{{ .ConfirmationURL }}</a>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p class="footer-text">إذا لم تكن أنت من قام بهذا الطلب، يرجى تجاهل هذا البريد.</p>
+      <p class="footer-copy">© 2026 SANAD PLATFORM</p>
+    </div>
+  </div>
+</body>
+</html>
