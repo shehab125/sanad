@@ -56,10 +56,10 @@ const Home: React.FC = () => {
   const hasFetchedTip = useRef(false);
 
   const GEMINI_MODELS = [
+    'gemini-3.1-flash-preview',
     'gemini-3.1-flash-lite-preview',
-    'gemini-flash-lite-latest',
-    'gemini-1.5-flash-8b',
-    'gemini-flash-latest'
+    'gemini-3-flash-preview',
+    'gemini-3.1-pro-preview'
   ];
 
   useEffect(() => {
@@ -141,7 +141,7 @@ const Home: React.FC = () => {
         .select('*')
         .order('rating_avg', { ascending: false })
         .limit(6);
-      setTopTutors(tutorsData as Tutor[]);
+      setTopTutors((tutorsData || []) as Tutor[]);
 
       // Latest Housing
       const { data: housingData } = await supabase
@@ -149,7 +149,7 @@ const Home: React.FC = () => {
         .select('id, title, price, rooms')
         .order('created_at', { ascending: false })
         .limit(6);
-      setNearbyHousing(housingData as Housing[]);
+      setNearbyHousing((housingData || []) as Housing[]);
 
       // AI Recommendations based on University
       if (user?.university) {

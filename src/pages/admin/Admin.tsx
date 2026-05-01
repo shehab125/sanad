@@ -39,10 +39,10 @@ const AdminPage: React.FC = () => {
   }, []);
 
   const GEMINI_MODELS = [
+    'gemini-3.1-flash-preview',
     'gemini-3.1-flash-lite-preview',
-    'gemini-flash-lite-latest',
-    'gemini-1.5-flash-8b',
-    'gemini-flash-latest'
+    'gemini-3-flash-preview',
+    'gemini-3.1-pro-preview'
   ];
 
   const getAiInsight = async (modelIndex = 0, retries = 1, delay = 1000) => {

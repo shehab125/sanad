@@ -86,10 +86,10 @@ const AIAssistant: React.FC = () => {
   };
 
   const GEMINI_MODELS = [
+    'gemini-3.1-flash-preview',
     'gemini-3.1-flash-lite-preview',
-    'gemini-flash-lite-latest',
-    'gemini-1.5-flash-8b',
-    'gemini-flash-latest'
+    'gemini-3-flash-preview',
+    'gemini-3.1-pro-preview'
   ];
 
   const handleSend = async (e: React.FormEvent) => {
