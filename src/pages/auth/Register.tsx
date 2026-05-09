@@ -17,7 +17,6 @@ const Register: React.FC = () => {
   const [faculty, setFaculty] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,64 +43,13 @@ const Register: React.FC = () => {
     if (error) {
       setError(error.message);
     } else {
-      setSuccess(true);
+      // بما أن تأكيد البريد ملغي، المستخدم سجل دخوله فعلياً الآن.
+      // نقوم بالتحويل للصفحة الرئيسية أو الصفحة المطلوبة.
+      window.location.href = redirectAfterLogin || '/';
     }
   };
 
-  if (success) {
-    return (
-      <div className="auth-page">
-        <div className="auth-card animate-in success-flow" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-          <div className="success-icon-wrapper" style={{ 
-            width: '100px', 
-            height: '100px', 
-            background: 'rgba(108, 99, 255, 0.1)', 
-            borderRadius: '50%', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            margin: '0 auto 2rem',
-            border: '2px solid var(--accent-glow)'
-          }} >
-            <span style={{ fontSize: '3rem' }}>✉️</span>
-          </div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 900, background: 'linear-gradient(135deg, #fff, var(--accent-light))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '1rem' }}>
-            {i18n.language === 'ar' ? '🎉 تفقد بريدك الإلكتروني!' : '🎉 Check your email!'}
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '1.05rem', lineHeight: 1.8 }}>
-            {i18n.language === 'ar' ? (
-              <>أهلاً بك في عائلة <span style={{ color: 'var(--accent-light)', fontWeight: 700 }}>سند</span>!<br />لقد أرسلنا رابط التأكيد إلى:</>
-            ) : (
-              <>Welcome to <span style={{ color: 'var(--accent-light)', fontWeight: 700 }}>SANAD</span> family!<br />We sent a confirmation link to:</>
-            )}
-            <br />
-            <strong style={{ display: 'inline-block', padding: '0.4rem 1rem', background: 'var(--bg-secondary)', borderRadius: '50px', border: '1px solid var(--border)', marginTop: '0.5rem', color: 'var(--text-white)' }}>{email}</strong>
-          </p>
-          
-          <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '2rem', textAlign: i18n.language === 'ar' ? 'right' : 'left', border: '1px solid var(--border)' }}>
-            <h4 style={{ color: 'var(--gold)', marginBottom: '0.5rem', fontSize: '0.95rem' }}>💡 {i18n.language === 'ar' ? 'نصائح سريعة:' : 'Quick Tips:'}</h4>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.88rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              <li>• {i18n.language === 'ar' ? 'قد يستغرق وصول البريد دقيقتين.' : 'It might take up to 2 minutes.'}</li>
-              <li>• {i18n.language === 'ar' ? 'تأكد من فحص مجلد الرسائل المزعجة (Spam).' : 'Check your Spam/Junk folder.'}</li>
-              <li>• {i18n.language === 'ar' ? 'الرابط صالح لمدة 24 ساعة فقط.' : 'The link is valid for 24 hours.'}</li>
-            </ul>
-          </div>
-
-          <Link
-            to={
-              redirectAfterLogin
-                ? `/login?redirect=${encodeURIComponent(redirectAfterLogin)}`
-                : '/login'
-            }
-            className="btn btn-primary w-100"
-            style={{ height: '54px', fontSize: '1.1rem' }}
-          >
-            🔐 {t('nav.login')}
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // إزالة واجهة "تفقد بريدك" لأنها لم تعد مطلوبة
 
   return (
     <div className="auth-page">

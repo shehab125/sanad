@@ -42,7 +42,7 @@ const App: React.FC = () => {
           <Route path="/" element={<Home />} />
           {/* Auth */}
           <Route path="/login" element={session ? <Navigate to="/" replace /> : <Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/register" element={session ? <Navigate to="/" replace /> : <Register />} />
           {/* Books */}
           <Route path="/books" element={<BooksList />} />
           <Route path="/books/new" element={<ProtectedRoute><AddBook /></ProtectedRoute>} />
