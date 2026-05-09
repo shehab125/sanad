@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
+import LocationMarker from '../../components/housing/LocationMarker';
 
 // Fix Leaflet marker icon issue
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -17,21 +18,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-const LocationMarker = ({ position, setPosition }: { position: [number, number] | null, setPosition: (p: [number, number] | null) => void }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    const handleClick = (e: L.LeafletMouseEvent) => {
-      setPosition([e.latlng.lat, e.latlng.lng]);
-    };
-    map.on('click', handleClick);
-    return () => {
-      map.off('click', handleClick);
-    };
-  }, [map, setPosition]);
-
-  return position === null ? null : <Marker position={position} />;
-};
 
 const AddHousing: React.FC = () => {
   const { user } = useAuth();
@@ -169,7 +155,7 @@ const AddHousing: React.FC = () => {
                 <button type="button" className="btn btn-ghost btn-sm" onClick={handleGetCurrentLocation} style={{ fontSize: '0.75rem' }}>📍 استخدام موقعي الحالي</button>
               </div>
               <div style={{ height: '300px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)' }}>
-                <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
+                <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' />
                   <LocationMarker position={position} setPosition={setPosition} />
                 </MapContainer>

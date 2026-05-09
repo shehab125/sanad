@@ -1,7 +1,4 @@
--- SQL Script to fix RLS Policies for Notes and Housing
--- Run this in your Supabase SQL Editor
-
--- 1. Enable RLS on tables (if not already enabled)
+-- 1. Enable RLS on tables
 ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE housing ENABLE ROW LEVEL SECURITY;
 ALTER TABLE housing_images ENABLE ROW LEVEL SECURITY;
@@ -46,15 +43,23 @@ CREATE POLICY "Allow owners to delete housing_images" ON housing_images FOR DELE
   EXISTS (SELECT 1 FROM housing h WHERE h.id = housing_id AND h.user_id = auth.uid())
 );
 
--- 5. Storage Policies (Bucket: notes)
--- If you haven't created the bucket 'notes' yet, do it in the Supabase Dashboard first.
--- These policies allow authenticated users to upload to their own folder.
--- Note: Replace 'notes' with your actual bucket name if different.
+-- 5. Storage Policies (Buckets: notes and housing)
+-- Make sure buckets 'notes' and 'housing' are created in Supabase Dashboard -> Storage
 
--- Allow public to read/view notes
--- CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'notes');
+-- Notes Bucket Policies
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'notes');
 
--- Allow authenticated users to upload to a folder named after their UID
--- CREATE POLICY "Allow authenticated upload" ON storage.objects FOR INSERT WITH CHECK (
---   bucket_id = 'notes' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text
--- );
+DROP POLICY IF EXISTS "Allow authenticated upload" ON storage.objects;
+CREATE POLICY "Allow authenticated upload" ON storage.objects FOR INSERT WITH CHECK (
+  bucket_id = 'notes' AND auth.role() = 'authenticated'
+);
+
+-- Housing Bucket Policies
+DROP POLICY IF EXISTS "Public Housing Access" ON storage.objects;
+CREATE POLICY "Public Housing Access" ON storage.objects FOR SELECT USING (bucket_id = 'housing');
+
+DROP POLICY IF EXISTS "Allow authenticated housing upload" ON storage.objects;
+CREATE POLICY "Allow authenticated housing upload" ON storage.objects FOR INSERT WITH CHECK (
+  bucket_id = 'housing' AND auth.role() = 'authenticated'
+);
