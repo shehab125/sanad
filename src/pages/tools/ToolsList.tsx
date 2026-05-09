@@ -6,6 +6,7 @@ interface Tool {
   id: string;
   title: string;
   category: string | null;
+  university: string | null;
   price: number;
   condition: string | null;
   description: string | null;
@@ -19,11 +20,18 @@ interface ToolWithImage extends Tool {
 const ToolsList: React.FC = () => {
   const [tools, setTools] = useState<ToolWithImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTools = async () => {
       const { data, error } = await supabase.from('tools').select('*, tool_images(image_url)').order('created_at', { ascending: false });
-      if (!error && data) {
+      if (error) {
+        setListError(
+          error.message +
+            ' — غالباً سياسات القراءة على جدول tools. شغّل supabase_rls_marketplace.sql في Supabase.'
+        );
+        setTools([]);
+      } else if (data) {
         const formatted = (data as any[]).map((row) => {
           const { tool_images, ...rest } = row;
           const img = row.tool_images?.[0]?.image_url;
@@ -51,10 +59,24 @@ const ToolsList: React.FC = () => {
         </div>
         <Link to="/tools/new" className="btn btn-primary">+ أضف أداة</Link>
       </div>
+
+      {listError && (
+        <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>
+          {listError}
+        </div>
+      )}
+
       {tools.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">🧰</div>
-          <div className="empty-state-title">لا توجد أدوات بعد</div>
+          <div className="empty-state-title">لا توجد منتجات في السوق بعد</div>
+          <p style={{ color: 'var(--text-muted)', maxWidth: '420px', margin: '0.75rem auto 1rem' }}>
+            المنتجات (الأدوات) تظهر هنا بعد الإضافة من «+ أضف أداة». تأكد أن جدول <code>tools</code> في Supabase يسمح بالقراءة
+            (RLS).
+          </p>
+          <Link to="/tools/new" className="btn btn-primary">
+            + أضف منتجاً الآن
+          </Link>
         </div>
       ) : (
         <div className="grid grid-3">
@@ -73,6 +95,7 @@ const ToolsList: React.FC = () => {
                       {tool.condition === 'new' ? 'جديد' : 'مستعمل'}
                     </span>
                   )}
+                  {tool.university && <span className="badge badge-accent">🏛 {tool.university}</span>}
                   {tool.category && <span className="badge badge-accent">{tool.category}</span>}
                 </div>
               </div>

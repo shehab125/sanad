@@ -20,6 +20,7 @@ interface BookWithImage extends Book {
 const BooksList: React.FC = () => {
   const [books, setBooks] = useState<BookWithImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -27,7 +28,13 @@ const BooksList: React.FC = () => {
         .from('books')
         .select('*, book_images(image_url)')
         .order('created_at', { ascending: false });
-      if (!error && data) {
+      if (error) {
+        setListError(
+          error.message +
+            ' — غالباً سياسات القراءة (RLS) على جدول books تمنع العرض. شغّل ملف supabase_rls_marketplace.sql في Supabase.'
+        );
+        setBooks([]);
+      } else if (data) {
         const formatted = (data as any[]).map((row) => {
           const img = row.book_images?.[0]?.image_url;
           const { book_images, ...book } = row;
@@ -58,6 +65,12 @@ const BooksList: React.FC = () => {
         </div>
         <Link to="/books/new" className="btn btn-primary">+ أضف كتابًا</Link>
       </div>
+
+      {listError && (
+        <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>
+          {listError}
+        </div>
+      )}
 
       {books.length === 0 ? (
         <div className="empty-state">

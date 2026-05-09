@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Login: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,7 +20,7 @@ const Login: React.FC = () => {
     if (error) {
       setError(error.message);
     } else {
-      navigate('/');
+      navigate(redirectTo && redirectTo.startsWith('/') ? redirectTo : '/');
     }
   };
 
@@ -62,7 +64,16 @@ const Login: React.FC = () => {
         </form>
 
         <div className="auth-footer">
-          ليس لديك حساب؟ <Link to="/register">سجّل الآن</Link>
+          ليس لديك حساب؟{' '}
+          <Link
+            to={
+              redirectTo
+                ? `/register?redirect=${encodeURIComponent(redirectTo)}`
+                : '/register'
+            }
+          >
+            سجّل الآن
+          </Link>
         </div>
       </div>
     </div>

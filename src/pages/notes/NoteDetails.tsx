@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import supabase from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -22,6 +22,7 @@ const NoteDetails: React.FC = () => {
   const { user } = useAuth();
   const [note, setNote] = useState<Note | null>(null);
   const [isFavourite, setIsFavourite] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,6 +35,17 @@ const NoteDetails: React.FC = () => {
       if (user) {
         const { data: fav } = await supabase.from('favorites').select('*').eq('user_id', user.id).eq('item_type', 'note').eq('item_id', id);
         setIsFavourite((fav || []).length > 0);
+        if (data && Number((data as Note).price) > 0) {
+          const { data: purchase } = await supabase
+            .from('note_purchases')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('note_id', id)
+            .maybeSingle();
+          setHasPurchased(!!purchase);
+        } else {
+          setHasPurchased(true);
+        }
       }
       setLoading(false);
     };
@@ -52,6 +64,8 @@ const NoteDetails: React.FC = () => {
   if (!note || error) return (
     <div className="page-container"><div className="alert alert-error">حدث خطأ: {error || 'الملخص غير موجود'}</div></div>
   );
+
+  const isOwner = !!user && user.id === note.user_id;
 
   return (
     <div className="detail-page animate-in">
@@ -80,9 +94,21 @@ const NoteDetails: React.FC = () => {
         )}
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-          <a href={note.pdf_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-            📥 تحميل / عرض الملف
-          </a>
+          {note.price > 0 && !hasPurchased && !isOwner && (
+            <>
+              <Link className="btn btn-primary" to={`/checkout?type=note&id=${note.id}`}>
+                💳 ادفع وحمّل الملف
+              </Link>
+              <span style={{ alignSelf: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                التحميل متاح بعد إتمام الدفع عبر المنصة.
+              </span>
+            </>
+          )}
+          {(note.price <= 0 || hasPurchased || isOwner) && (
+            <a href={note.pdf_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+              📥 تحميل / عرض الملف
+            </a>
+          )}
           {user && (
             <button className={isFavourite ? 'btn btn-danger' : 'btn btn-secondary'} onClick={handleFavourite}>
               {isFavourite ? '💔 إزالة من المفضلة' : '❤️ أضف للمفضلة'}

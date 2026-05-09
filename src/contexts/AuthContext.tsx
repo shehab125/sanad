@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 import supabase from '../supabaseClient';
 
 interface Profile {
   id: string;
   full_name?: string;
+  username?: string;
   email: string;
   phone?: string;
   university?: string;
@@ -46,25 +47,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // Load user profile whenever the session changes.
+  // ملف المستخدم: نملأ بياناتًا أولية من الجلسة فورًا حتى لا تبقى user=null بعد تسجيل الدخول
+  // (كان يسبب إعادة توجيه مستمرة إلى /login أو صفحة دفع فارغة).
   useEffect(() => {
+    if (!session?.user) {
+      setUser(null);
+      return;
+    }
+    const minimal: Profile = {
+      id: session.user.id,
+      email: session.user.email || '',
+      full_name: (session.user.user_metadata?.full_name as string | undefined) || undefined,
+      username: (session.user.user_metadata?.username as string | undefined) || undefined,
+    };
+    setUser(minimal);
+
+    let cancelled = false;
     const fetchProfile = async () => {
-      if (session?.user) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        if (!error && data) {
-          setUser(data as Profile);
-        }
-      } else {
-        setUser(null);
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+      if (!cancelled && data) {
+        setUser(data as Profile);
       }
     };
-    if (session) {
-      fetchProfile();
-    }
+    fetchProfile();
+    return () => {
+      cancelled = true;
+    };
   }, [session]);
 
   const signIn = async (email: string, password: string) => {
@@ -73,15 +85,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, profile: Partial<Profile>) => {
-    // Sign up with email/password
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: profile.full_name,
+          username: profile.username,
+          university: profile.university,
+          faculty: profile.faculty,
+        },
+      },
+    });
     if (error) {
       return { error: error as Error };
     }
-    // insert profile row
     const userId = data?.user?.id;
     if (userId) {
-      const { error: profileErr } = await supabase.from('profiles').insert({ id: userId, email, ...profile });
+      const row: Record<string, unknown> = {
+        id: userId,
+        full_name: profile.full_name ?? null,
+        username: profile.username ?? null,
+      };
+      if (profile.avatar_url) row.avatar_url = profile.avatar_url;
+
+      const { error: profileErr } = await supabase.from('profiles').upsert(row, { onConflict: 'id' });
       if (profileErr) {
         return { error: profileErr as Error };
       }

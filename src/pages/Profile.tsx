@@ -28,6 +28,7 @@ const tableIcons: Record<string, string> = {
 const Profile: React.FC = () => {
   const { user, updateProfile } = useAuth();
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [university, setUniversity] = useState('');
   const [faculty, setFaculty] = useState('');
   const [phone, setPhone] = useState('');
@@ -40,6 +41,7 @@ const Profile: React.FC = () => {
   useEffect(() => {
     if (!user) return;
     setFullName(user.full_name || '');
+    setUsername(user.username || '');
     setUniversity(user.university || '');
     setFaculty(user.faculty || '');
     setPhone(user.phone || '');
@@ -86,7 +88,7 @@ const Profile: React.FC = () => {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateProfile({ full_name: fullName, university, faculty, phone });
+    await updateProfile({ full_name: fullName, username, university, faculty, phone });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -106,6 +108,11 @@ const Profile: React.FC = () => {
         <aside className="profile-aside">
           <div className="profile-avatar">{initials}</div>
           <div className="profile-name">{fullName || 'مستخدم'}</div>
+          {username && (
+            <div style={{ fontSize: '0.9rem', color: 'var(--accent-light)', marginTop: '0.25rem' }} dir="ltr">
+              @{username}
+            </div>
+          )}
           <div className="profile-email">{user.email}</div>
           {university && <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>🏛 {university}</p>}
           {faculty && <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>📖 {faculty}</p>}
@@ -139,6 +146,17 @@ const Profile: React.FC = () => {
               <div className="form-group">
                 <label>الاسم</label>
                 <input type="text" className="form-control" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>اسم المستخدم</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  dir="ltr"
+                  placeholder="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
               </div>
               <div className="form-group">
                 <label>الجامعة</label>

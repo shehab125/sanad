@@ -3,7 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import supabase from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 
-interface Tool { id: string; user_id: string; title: string; category: string | null; price: number; condition: string | null; description: string | null; created_at: string; }
+interface Tool {
+  id: string;
+  user_id: string;
+  title: string;
+  category: string | null;
+  university: string | null;
+  price: number;
+  condition: string | null;
+  description: string | null;
+  created_at: string;
+}
 interface Image { image_url: string; }
 interface SellerProfile { id: string; full_name: string | null; avatar_url: string | null; }
 
@@ -71,6 +81,7 @@ const ToolDetails: React.FC = () => {
               {tool.condition === 'new' ? '✨ جديد' : '📦 مستعمل'}
             </span>
           )}
+          {tool.university && <span className="detail-meta-item">🏛 {tool.university}</span>}
           {tool.category && <span className="detail-meta-item">🏷 {tool.category}</span>}
           {seller && <span className="detail-meta-item">👤 {seller.full_name || 'مستخدم'}</span>}
         </div>
@@ -78,7 +89,20 @@ const ToolDetails: React.FC = () => {
         {tool.description && <div className="detail-description">{tool.description}</div>}
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-          {user && user.id !== tool.user_id && <button className="btn btn-primary" onClick={handleChat}>💬 تواصل مع البائع</button>}
+          {tool.price > 0 && (!user || user.id !== tool.user_id) && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => navigate(`/checkout?type=tool&id=${tool.id}`)}
+            >
+              💳 شراء (دفع إلكتروني)
+            </button>
+          )}
+          {user && user.id !== tool.user_id && (
+            <button type="button" className="btn btn-secondary" onClick={handleChat}>
+              💬 تواصل مع البائع
+            </button>
+          )}
           {user && (
             <button className={isFavourite ? 'btn btn-danger' : 'btn btn-secondary'} onClick={handleFavourite}>
               {isFavourite ? '💔 إزالة من المفضلة' : '❤️ أضف للمفضلة'}

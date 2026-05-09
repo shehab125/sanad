@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import supabase from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
+import { ensureUserProfile } from '../../lib/ensureProfile';
 import { EGYPTIAN_UNIVERSITIES } from '../../data/universities';
 
 const AddTool: React.FC = () => {
@@ -16,6 +17,7 @@ const AddTool: React.FC = () => {
   const [files, setFiles] = useState<FileList | null>(null);
   const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!user) return (
     <div className="page-container">
@@ -25,18 +27,44 @@ const AddTool: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !price) return;
+    if (!title || !price || !String(university).trim()) return;
     setLoading(true);
-    const { data, error } = await supabase.from('tools').insert({ 
-      user_id: user.id, 
-      title, 
-      category: category || null, 
-      university: university || null,
-      price: Number(price), 
-      condition, 
-      description: description || null 
-    }).select().single();
-    if (error || !data) { alert(error?.message || 'خطأ في إضافة المنتج'); setLoading(false); return; }
+    setSubmitError(null);
+
+    const { error: profErr } = await ensureUserProfile(supabase, user.id, user.email || '', {
+      full_name: user.full_name,
+      username: user.username,
+    });
+    if (profErr) {
+      setSubmitError(
+        `لا يمكن ربط المنتج بحسابك: ${profErr.message}. تأكد أن جدول profiles يحتوي صفاً لك، أو شغّل ملف supabase_rls_marketplace.sql (قسم profiles).`
+      );
+      setLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('tools')
+      .insert({
+        user_id: user.id,
+        title,
+        category: category || null,
+        university: university.trim(),
+        price: Number(price),
+        condition,
+        description: description || null,
+      })
+      .select()
+      .single();
+
+    if (error || !data) {
+      setSubmitError(
+        error?.message ||
+          'فشل حفظ المنتج. تحقق من صلاحيات Supabase (RLS) لجدول tools.'
+      );
+      setLoading(false);
+      return;
+    }
     const toolId = data.id;
     if (files && files.length > 0) {
       const uploadedUrls: string[] = [];
@@ -71,19 +99,30 @@ const AddTool: React.FC = () => {
       </div>
       <div style={{ maxWidth: '640px' }}>
         <div className="auth-card" style={{ maxWidth: '100%' }}>
+          {submitError && (
+            <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+              {submitError}
+            </div>
+          )}
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            بعد الحفظ ستُعرض أداتك في صفحة{' '}
+            <Link to="/tools" style={{ color: 'var(--accent-light)' }}>
+              الأدوات / المنتجات
+            </Link>
+            . للشراء الإلكتروني استخدم زر «شراء» من صفحة المنتج (سعر أكبر من صفر).
+          </p>
           <form onSubmit={handleSubmit}>
             <div className="form-group"><label>اسم الأداة *</label><input type="text" className="form-control" placeholder="أدخل اسم الأداة" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
-            <div className="form-group"><label>الفئة</label><input type="text" className="form-control" placeholder="مثل: مسطرة، آلة حاسبة..." value={category} onChange={(e) => setCategory(e.target.value)} /></div>
-            <div className="form-group"><label>السعر (جنيه) *</label><input type="number" className="form-control" placeholder="0" value={price} onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')} required /></div>
             <div className="form-group">
-              <label>الجامعة</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                placeholder="ابحث عن جامعتك..." 
-                value={university} 
-                onChange={(e) => setUniversity(e.target.value)} 
+              <label>الجامعة *</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="ابحث عن جامعتك أو اكتب الاسم..."
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
                 list="add-tool-uni-list"
+                required
               />
               <datalist id="add-tool-uni-list">
                 {EGYPTIAN_UNIVERSITIES.map((uni, idx) => (
@@ -91,6 +130,8 @@ const AddTool: React.FC = () => {
                 ))}
               </datalist>
             </div>
+            <div className="form-group"><label>الفئة</label><input type="text" className="form-control" placeholder="مثل: مسطرة، آلة حاسبة..." value={category} onChange={(e) => setCategory(e.target.value)} /></div>
+            <div className="form-group"><label>السعر (جنيه) *</label><input type="number" className="form-control" placeholder="0" value={price} onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')} required /></div>
             <div className="form-group"><label>الحالة</label><select className="form-control" value={condition} onChange={(e) => setCondition(e.target.value)}><option value="new">جديد ✨</option><option value="used">مستعمل 📦</option></select></div>
             <div className="form-group"><label>الوصف</label><textarea className="form-control" placeholder="اكتب وصفًا للأداة..." value={description} onChange={(e) => setDescription(e.target.value)} /></div>
             <div className="form-group">

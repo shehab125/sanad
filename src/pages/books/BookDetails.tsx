@@ -150,6 +150,15 @@ const BookDetails: React.FC = () => {
         )}
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+          {book.price > 0 && (!user || user.id !== book.user_id) && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => navigate(`/checkout?type=book&id=${book.id}`)}
+            >
+              💳 شراء (دفع إلكتروني)
+            </button>
+          )}
           {user && user.id !== book.user_id && (
             <button className="btn btn-primary" onClick={handleChat}>💬 تواصل مع البائع</button>
           )}

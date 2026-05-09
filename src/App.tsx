@@ -25,12 +25,15 @@ import Chat from './pages/chat/Chat';
 import Notifications from './pages/Notifications';
 import Admin from './pages/admin/Admin';
 import SearchPage from './pages/Search';
+import Checkout from './pages/checkout/Checkout';
+import PaymentSuccess from './pages/checkout/PaymentSuccess';
+import PaymentPreview from './pages/checkout/PaymentPreview';
 import ProtectedRoute from './components/ProtectedRoute';
 import AIAssistant from './components/AIAssistant';
 import { useAuth } from './contexts/AuthContext';
 
 const App: React.FC = () => {
-  const { user } = useAuth();
+  const { session } = useAuth();
   return (
     <>
       <NavBar />
@@ -38,7 +41,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           {/* Auth */}
-          <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+          <Route path="/login" element={session ? <Navigate to="/" replace /> : <Login />} />
           <Route path="/register" element={<Register />} />
           {/* Books */}
           <Route path="/books" element={<BooksList />} />
@@ -67,6 +70,10 @@ const App: React.FC = () => {
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           {/* Search */}
           <Route path="/search" element={<SearchPage />} />
+          {/* Checkout & payment */}
+          <Route path="/payment/preview" element={<PaymentPreview />} />
+          <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+          <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
           {/* Admin */}
           <Route path="/admin/*" element={<ProtectedRoute requireAdmin={true}><Admin /></ProtectedRoute>} />
           {/* Fallback */}

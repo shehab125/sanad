@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import supabase from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
+import { ensureUserProfile } from '../../lib/ensureProfile';
 import { EGYPTIAN_UNIVERSITIES } from '../../data/universities';
 
 const AddBook: React.FC = () => {
@@ -16,6 +17,7 @@ const AddBook: React.FC = () => {
   const [files, setFiles] = useState<FileList | null>(null);
   const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!user) return (
     <div className="page-container">
@@ -30,6 +32,20 @@ const AddBook: React.FC = () => {
     e.preventDefault();
     if (!title || !price) return;
     setLoading(true);
+    setSubmitError(null);
+
+    const { error: profErr } = await ensureUserProfile(supabase, user.id, user.email || '', {
+      full_name: user.full_name,
+      username: user.username,
+    });
+    if (profErr) {
+      setSubmitError(
+        `لا يمكن ربط الكتاب بحسابك: ${profErr.message}. تأكد من وجود صف في جدول profiles أو سياسات الملف الشخصي في Supabase.`
+      );
+      setLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('books')
       .insert({
@@ -45,7 +61,10 @@ const AddBook: React.FC = () => {
       .single();
     if (error || !data) {
       setLoading(false);
-      alert(error?.message || 'خطأ في إنشاء الكتاب');
+      setSubmitError(
+        error?.message ||
+          'تعذر حفظ الكتاب. الأسباب الشائعة: صلاحيات Supabase على جدول books، أو أعمدة ناقصة. انظر ملف supabase_rls_marketplace.sql في المشروع.'
+      );
       return;
     }
     const bookId = data.id;
@@ -97,6 +116,22 @@ const AddBook: React.FC = () => {
 
       <div style={{ maxWidth: '640px' }}>
         <div className="auth-card" style={{ maxWidth: '100%' }}>
+          {submitError && (
+            <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+              {submitError}
+            </div>
+          )}
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            بعد الحفظ يظهر الكتاب في{' '}
+            <Link to="/books" style={{ color: 'var(--accent-light)' }}>
+              قائمة الكتب
+            </Link>
+            . صفحة الدفع تُفتح من زر الشراء على صفحة الكتاب (سعر أكبر من صفر). معاينة الشكل:{' '}
+            <Link to="/payment/preview" style={{ color: 'var(--accent-light)' }}>
+              /payment/preview
+            </Link>
+            .
+          </p>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>عنوان الكتاب *</label>

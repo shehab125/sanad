@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -11,15 +11,18 @@ interface ProtectedRouteProps {
  * A wrapper for routes that require authentication and optionally admin privileges.
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
-  const { user, loading } = useAuth();
+  const { user, session, loading } = useAuth();
+  const location = useLocation();
   if (loading) {
     // Could show loading spinner here
     return <div>Loading...</div>;
   }
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  // الاعتماد على الجلسة وليس صف profiles فقط — يمنع حلقة «دخلت لكن رجعت للوجين».
+  if (!session) {
+    const redirect = `${location.pathname}${location.search || ''}`;
+    return <Navigate to={`/login?redirect=${encodeURIComponent(redirect)}`} replace />;
   }
-  if (requireAdmin && user.role !== 'admin') {
+  if (requireAdmin && user?.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
   return children;

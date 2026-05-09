@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { EGYPTIAN_UNIVERSITIES } from '../../data/universities';
 import { useTranslation } from 'react-i18next';
 
 const Register: React.FC = () => {
   const { signUp } = useAuth();
-  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectAfterLogin = searchParams.get('redirect');
   const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [university, setUniversity] = useState('');
   const [faculty, setFaculty] = useState('');
   const [error, setError] = useState('');
@@ -21,7 +23,23 @@ const Register: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    const { error } = await signUp(email, password, { full_name: fullName, university, faculty });
+    const u = username.trim().toLowerCase();
+    if (u.length < 2) {
+      setError('اسم المستخدم يجب أن يكون حرفين على الأقل.');
+      setLoading(false);
+      return;
+    }
+    if (!/^[a-z0-9_\-\u0600-\u06FF]+$/.test(u)) {
+      setError('اسم المستخدم: حروف إنجليزية أو عربية وأرقام وشرطة (- أو _).');
+      setLoading(false);
+      return;
+    }
+    const { error } = await signUp(email, password, {
+      full_name: fullName,
+      username: u,
+      university,
+      faculty,
+    });
     setLoading(false);
     if (error) {
       setError(error.message);
@@ -69,7 +87,15 @@ const Register: React.FC = () => {
             </ul>
           </div>
 
-          <Link to="/login" className="btn btn-primary w-100" style={{ height: '54px', fontSize: '1.1rem' }}>
+          <Link
+            to={
+              redirectAfterLogin
+                ? `/login?redirect=${encodeURIComponent(redirectAfterLogin)}`
+                : '/login'
+            }
+            className="btn btn-primary w-100"
+            style={{ height: '54px', fontSize: '1.1rem' }}
+          >
             🔐 {t('nav.login')}
           </Link>
         </div>
@@ -92,6 +118,22 @@ const Register: React.FC = () => {
           <div className="form-group">
             <label>الاسم الكامل</label>
             <input type="text" className="form-control" placeholder="اسمك الكامل" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label>اسم المستخدم *</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="مثل: ahmed_khaled"
+              dir="ltr"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+            <p className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.35rem' }}>
+              يُخزَّن في ملفك الشخصي ويُستخدم للتعرّف عليك داخل المنصة.
+            </p>
           </div>
           <div className="form-group">
             <label>الجامعة</label>
@@ -128,7 +170,16 @@ const Register: React.FC = () => {
         </form>
 
         <div className="auth-footer">
-          {t('nav.login_prompt')} <Link to="/login">{t('nav.login')}</Link>
+          {t('nav.login_prompt')}{' '}
+          <Link
+            to={
+              redirectAfterLogin
+                ? `/login?redirect=${encodeURIComponent(redirectAfterLogin)}`
+                : '/login'
+            }
+          >
+            {t('nav.login')}
+          </Link>
         </div>
       </div>
     </div>
