@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../../supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
 // Fix Leaflet marker icon issue
@@ -17,12 +17,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-const LocationMarker = ({ position, setPosition }: { position: [number, number] | null, setPosition: (p: [number, number]) => void }) => {
-  useMapEvents({
-    click(e) {
+const LocationMarker = ({ position, setPosition }: { position: [number, number] | null, setPosition: (p: [number, number] | null) => void }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    const handleClick = (e: L.LeafletMouseEvent) => {
       setPosition([e.latlng.lat, e.latlng.lng]);
-    },
-  });
+    };
+    map.on('click', handleClick);
+    return () => {
+      map.off('click', handleClick);
+    };
+  }, [map, setPosition]);
+
   return position === null ? null : <Marker position={position} />;
 };
 
@@ -178,9 +185,13 @@ const AddHousing: React.FC = () => {
                   multiple 
                   accept="image/*" 
                   onChange={(e) => {
-                    setFiles(e.target.files);
-                    if (e.target.files) {
-                      setPreviews(Array.from(e.target.files).map(f => URL.createObjectURL(f)));
+                    const selectedFiles = e.target.files;
+                    setFiles(selectedFiles);
+                    if (selectedFiles) {
+                      // Revoke old previews to avoid memory leaks
+                      previews.forEach(url => URL.revokeObjectURL(url));
+                      const newPreviews = Array.from(selectedFiles).map(f => URL.createObjectURL(f));
+                      setPreviews(newPreviews);
                     }
                   }} 
                 />
